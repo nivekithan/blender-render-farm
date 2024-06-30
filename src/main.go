@@ -15,7 +15,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	cmd := exec.Command(blender, "-b", "/box_apps.blend", "-o", "/rendered/frame_####", "-E", "CYCLES", "-f", "+1")
+	cmd := exec.Command(blender, "-b", "/box_apps.blend", "-o", "/rendered/frame_####", "-E", "CYCLES", "-f", "+0")
 
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr

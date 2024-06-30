@@ -11,7 +11,7 @@ RUN curl -o blender.tar.xz https://download.blender.org/release/Blender4.1/blend
 RUN tar -xf blender.tar.xz  --strip-components=1
 RUN ln -s /download_blender/blender /usr/local/bin/blender
 
-COPY ./blender-renderer /start
+COPY ./dist/blender-renderer /start
 COPY ./box_apps.blend /box_apps.blend
 
 RUN mkdir /rendered
