@@ -1,0 +1,10 @@
+name: blender-farm
+runtime:
+  name: nodejs
+  options:
+    packagemanager: pnpm
+description: Use aws as render farm for blender
+config:
+  pulumi:tags:
+    value:
+      pulumi:template: aws-typescript
