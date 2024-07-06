@@ -10,8 +10,6 @@ import (
 	"github.com/nivekithan/blender-render-farm/src/iaws"
 )
 
-const BLEND_FILE_PATH = "/file.blend"
-
 func main() {
 
 	flags := NewFlagFromCmdLine()
@@ -35,7 +33,7 @@ func main() {
 		"-b",
 		BLEND_FILE_PATH,
 		"-o",
-		"/rendered/frame_####",
+		RENDERED_PATH,
 		"-E",
 		"CYCLES",
 		"-f",
@@ -44,11 +42,27 @@ func main() {
 
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
+	cmd.Stdin = os.Stdin
 
 	err = cmd.Run()
 
 	if err != nil {
 		log.Println("Failed on running blender")
+		log.Fatal(err)
+	}
+
+	renderedFileName, renderedFilePath := GetBlenderRenderedFile()
+
+	log.Println("Rendered file: ", renderedFileName)
+
+	err = s3Client.WriteLocalFileToS3(
+		context.Background(),
+		fmt.Sprintf("%v/%v", flags.s3FileKey, renderedFileName),
+		renderedFilePath,
+	)
+
+	if err != nil {
+		log.Println("Failed on writing rendered file to s3")
 		log.Fatal(err)
 	}
 
