@@ -1,21 +1,35 @@
-import { Hono } from "hono";
-import { LambdaContext, handle } from "hono/aws-lambda";
-import { S3ObjectCreatedNotificationEvent } from "aws-lambda";
+import { Handler, S3Event, S3EventRecord } from "aws-lambda";
+import { S3Client, GetObjectTaggingCommand } from "@aws-sdk/client-s3";
 
-type Bindings = {
-  event: S3ObjectCreatedNotificationEvent;
-  lambdaContext: LambdaContext;
+export const handler: Handler = async (event: S3Event) => {
+  const records = event.Records;
+
+  await Promise.all(records.map(initateAwsBatch));
 };
 
-const app = new Hono<{ Bindings: Bindings }>();
+async function initateAwsBatch(record: S3EventRecord) {
+  const bucketName = record.s3.bucket.name;
+  const objectKey = record.s3.object.key;
 
-app.get("/", (c) => {
-  const event = c.env.event;
-  const context = c.env.lambdaContext;
+  const s3Client = new S3Client();
 
-  console.log(JSON.stringify({ event }, null, 2));
+  const command = new GetObjectTaggingCommand({
+    Key: objectKey,
+    Bucket: bucketName,
+  });
 
-  return c.json({ ok: true });
-});
+  const response = await s3Client.send(command);
 
-export const handler = handle(app);
+  const frameTag = response.TagSet?.find((tag) => tag.Key === "frame");
+
+  if (!frameTag || !frameTag.Value) {
+    console.log("Created object does not have a frame tag");
+    return;
+  }
+
+  const frame = parseInt(frameTag.Value);
+
+  console.log(
+    `Initiating AWS Batch job to render ${frame} frames of ${bucketName}/${objectKey}`,
+  );
+}
