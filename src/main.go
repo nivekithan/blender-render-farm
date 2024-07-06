@@ -1,21 +1,46 @@
 package main
 
 import (
+	"context"
+	"fmt"
 	"log"
 	"os"
 	"os/exec"
+
+	"github.com/nivekithan/blender-render-farm/src/iaws"
 )
 
+const BLEND_FILE_PATH = "/file.blend"
+
 func main() {
+
+	flags := NewFlagFromCmdLine()
+
+	awsConfig := iaws.LoadAwsConfig()
+	s3Client := iaws.NewS3Client(awsConfig, flags.bucketName)
+
 	log.Println("Starting blender renderer...")
-	blender, err := exec.LookPath("blender")
+
+	blender := GetBlenderPath()
+
+	err := s3Client.StoreS3FileLocally(context.Background(), flags.s3FileKey, BLEND_FILE_PATH)
 
 	if err != nil {
-		log.Println("Failed on looking for blender")
+		log.Println("Failed on storing file in s3")
 		log.Fatal(err)
 	}
 
-	cmd := exec.Command(blender, "-b", "/box_apps.blend", "-o", "/rendered/frame_####", "-E", "CYCLES", "-f", "+10")
+	cmd := exec.Command(
+		blender,
+		"-b",
+		BLEND_FILE_PATH,
+		"-o",
+		"/rendered/frame_####",
+		"-E",
+		"CYCLES",
+		"-f",
+		fmt.Sprintf("+%d", flags.frameToRender-1),
+	)
 
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr

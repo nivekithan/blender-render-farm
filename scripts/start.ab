@@ -1,0 +1,26 @@
+let bucket_name = $pulumi stack output bucketName --cwd ./infra$ failed {
+    echo "Could not get bucketName from the pulumi stack. Make sure you have deployed the stack already once"
+}
+
+let blend = "file.blend"
+let frame = 1
+
+let aws_session_token = $aws configure export-credentials | jq '.SessionToken' -r $ failed {
+    echo "Could not get aws session token. Make sure you have aws cli installed and configured"
+}
+
+let aws_access_key_id = $aws configure export-credentials | jq '.AccessKeyId' -r $ failed {
+    echo "Could not get aws access key id. Make sure you have aws cli installed and configured"
+}
+
+let aws_secret_access_key = $aws configure export-credentials | jq '.SecretAccessKey' -r $ failed {
+    echo "Could not get aws secret access key. Make sure you have aws cli installed and configured"
+}
+
+unsafe $docker run \
+  -e AWS_SESSION_TOKEN={aws_session_token} \
+  -e AWS_ACCESS_KEY_ID={aws_access_key_id} \
+  -e AWS_SECRET_ACCESS_KEY={aws_secret_access_key} \
+  --mount type=bind,source=./rendered,target=/rendered \
+  blender-renderer /start -blend {blend} -frame {frame} -bucket {bucket_name}$ 
+

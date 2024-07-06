@@ -1,0 +1,13 @@
+{
+  "name": "blender-render-farm",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "docker:build": "./scripts/build.bash",
+    "docker:start": "amber ./scripts/start.ab"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
