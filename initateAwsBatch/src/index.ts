@@ -49,15 +49,7 @@ async function initateAwsBatch(record: S3EventRecord) {
       jobQueue: env.JOB_QUEUE_ARN,
       jobDefinition: env.JOB_DEFINITION_ARN,
       containerOverrides: {
-        command: [
-          "/start",
-          "-blend",
-          objectKey,
-          "-frame",
-          `${i}`,
-          "-bucket",
-          bucketName,
-        ],
+        command: ["-blend", objectKey, "-frame", `${i}`, "-bucket", bucketName],
       },
     });
 

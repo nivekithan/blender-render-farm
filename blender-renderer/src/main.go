@@ -67,5 +67,7 @@ func main() {
 	}
 
 	log.Println("Done!")
-	os.Exit(0)
+
+	return
+
 }

@@ -15,3 +15,5 @@ COPY ./dist/blender-renderer /start
 
 RUN mkdir /rendered
 
+ENTRYPOINT ["/start"]
+
