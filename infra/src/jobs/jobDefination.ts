@@ -44,7 +44,7 @@ const jobRolePolicyDocument = blenderFarmBucket.arn.apply((arn) => {
         {
           effect: "Allow",
           actions: ["s3:GetObject", "s3:PutObject"],
-          resources: [`${arn}/*`],
+          resources: [arn, `${arn}/*`],
         },
       ],
     })
@@ -82,6 +82,7 @@ export const blenderRendererJobDefinition = new aws.batch.JobDefinition(
         assignPublicIp: "ENABLED",
       },
       executionRoleArn: ecsTaskExecutionRole.arn,
+      jobRoleArn: ecsTaskExecutionRole.arn,
       image: blenderRendererImage.imageUri,
       resourceRequirements: [
         {

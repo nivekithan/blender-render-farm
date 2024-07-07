@@ -2,6 +2,8 @@ import * as aws from "@pulumi/aws";
 import * as pulumi from "@pulumi/pulumi";
 import path from "path";
 import { blenderFarmBucket } from "./blenderFarmStorage";
+import { blenderRendererJobDefinition } from "./jobs/jobDefination";
+import { blenderFramJobQueue } from "./jobs/queue";
 
 const assumeRole = aws.iam.getPolicyDocument({
   statements: [
@@ -43,6 +45,11 @@ const iamPolicy = new aws.iam.Policy(
               actions: ["s3:GetObjectTagging"],
               resources: [`${blenderFarmBucketArn}/*`],
             },
+            {
+              effect: "Allow",
+              actions: ["batch:SubmitJob"],
+              resources: [`*`],
+            },
           ],
         })
         .then((policy) => policy.json);
@@ -75,6 +82,13 @@ export const initateAwsBatchLambda = new aws.lambda.Function(
     role: iam.arn,
     handler: "index.handler",
     code: new pulumi.asset.FileArchive(pathToZippedLambdaCode),
+    environment: {
+      variables: {
+        BUCKET_NAME: blenderFarmBucket.id,
+        JOB_DEFINITION_ARN: blenderRendererJobDefinition.arn,
+        JOB_QUEUE_ARN: blenderFramJobQueue.arn,
+      },
+    },
   },
 );
 
