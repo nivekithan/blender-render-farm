@@ -23,6 +23,7 @@ const securityGroup = new aws.ec2.SecurityGroup(
     ],
   },
 );
+
 const batchAssumeRole = aws.iam.getPolicyDocument({
   statements: [
     {
