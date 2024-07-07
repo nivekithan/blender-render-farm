@@ -20,6 +20,9 @@ importers:
       '@pulumi/random':
         specifier: ^4.16.3
         version: 4.16.3(typescript@5.5.2)
+      ip-num:
+        specifier: ^1.5.1
+        version: 1.5.1
     devDependencies:
       '@types/node':
         specifier: ^18
@@ -933,6 +936,9 @@ packages:
   ip-address@9.0.5:
     resolution: {integrity: sha512-zHtQzGojZXTwZTHQqra+ETKd4Sn3vgi7uBmlPoXVWZqYvuKmtI0l/VZTjqGmJY9x88GGOaZ9+G9ES8hC4T4X8g==}
     engines: {node: '>= 12'}
+
+  ip-num@1.5.1:
+    resolution: {integrity: sha512-QziFxgxq3mjIf5CuwlzXFYscHxgLqdEdJKRo2UJ5GurL5zrSRMzT/O+nK0ABimoFH8MWF8YwIiwECYsHc1LpUQ==}
 
   is-arguments@1.1.1:
     resolution: {integrity: sha512-8Q7EARjzEnKpt/PCD7e1cgUS0a6X8u5tdSiMqXhojOdoV9TsMsiO+9VLC5vAmO8N7/GmXn7yjR8qnA6bVAEzfA==}
@@ -2970,6 +2976,8 @@ snapshots:
     dependencies:
       jsbn: 1.1.0
       sprintf-js: 1.1.3
+
+  ip-num@1.5.1: {}
 
   is-arguments@1.1.1:
     dependencies:

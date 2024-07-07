@@ -82,7 +82,7 @@ export const blenderRendererJobDefinition = new aws.batch.JobDefinition(
         assignPublicIp: "ENABLED",
       },
       executionRoleArn: ecsTaskExecutionRole.arn,
-      image: blenderRendererImage.urn,
+      image: blenderRendererImage.imageUri,
       resourceRequirements: [
         {
           type: "VCPU",

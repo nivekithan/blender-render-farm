@@ -1,18 +1,52 @@
 import * as aws from "@pulumi/aws";
+import * as pulumi from "@pulumi/pulumi";
+import * as ipNum from "ip-num";
 
 const vpc = new aws.ec2.Vpc("BlenderFarmVpc", {
   cidrBlock: "10.2.0.0/16",
+  enableDnsHostnames: true,
+  assignGeneratedIpv6CidrBlock: true,
+  enableDnsSupport: true,
 });
 
-const firstSubnet = new aws.ec2.Subnet("BlenderFarmSubnet", {
+const vpcIpv6CidrBlock = vpc.ipv6CidrBlock;
+
+const ipv6Subnet = new aws.ec2.Subnet("BlenderFarmSubnetIpv6", {
+  assignIpv6AddressOnCreation: true,
+  enableDns64: true,
   vpcId: vpc.id,
+  mapPublicIpOnLaunch: true,
+
+  ipv6CidrBlock: getIpv6SubnetRange(vpcIpv6CidrBlock, BigInt(64), 12),
   cidrBlock: "10.2.0.0/24",
 });
 
-const secondSubnet = new aws.ec2.Subnet("BlenderFarmSubnet2", {
+const igw = new aws.ec2.InternetGateway("internet-gateway", {
   vpcId: vpc.id,
-  cidrBlock: "10.2.1.0/24",
 });
+
+// Create a route table
+const routeTable = new aws.ec2.RouteTable("route-table", {
+  vpcId: vpc.id,
+  routes: [
+    {
+      cidrBlock: "0.0.0.0/0",
+      gatewayId: igw.id,
+    },
+    {
+      ipv6CidrBlock: "::/0",
+      gatewayId: igw.id,
+    },
+  ],
+});
+
+const routeTableAssociation1 = new aws.ec2.RouteTableAssociation(
+  "rta-public-subnet-1",
+  {
+    subnetId: ipv6Subnet.id,
+    routeTableId: routeTable.id,
+  },
+);
 
 const securityGroup = new aws.ec2.SecurityGroup(
   "ComputeEnvironmentSecurityGroup",
@@ -60,7 +94,7 @@ export const computeEnvironment = new aws.batch.ComputeEnvironment(
     computeResources: {
       type: "FARGATE",
       maxVcpus: 500,
-      subnets: [firstSubnet.id, secondSubnet.id],
+      subnets: [ipv6Subnet.id],
       securityGroupIds: [securityGroup.id],
     },
 
@@ -71,3 +105,28 @@ export const computeEnvironment = new aws.batch.ComputeEnvironment(
     dependsOn: [awsBatchServiceRoleRolePolicyAttachment],
   },
 );
+
+function getIpv6SubnetRange(
+  vpcIPv6Range: pulumi.Output<string>,
+  subnetIPv6Prefix: bigint,
+  subnetNumber: number,
+): pulumi.Output<string> {
+  return vpcIPv6Range.apply((vpcRange) => {
+    const ipv6Range = new ipNum.IPv6CidrRange(
+      new ipNum.IPv6(vpcRange.split("/")[0]), // IPV6 part
+      new ipNum.IPv6Prefix(BigInt(vpcRange.split("/")[1])), // Netmask part
+    );
+
+    if (ipv6Range.getPrefix().value !== BigInt(56)) {
+      throw new Error("The provided CIDR block is a /56 range.");
+    }
+
+    const subnetRanges = ipv6Range.splitInto(
+      new ipNum.IPv6Prefix(subnetIPv6Prefix),
+    );
+
+    console.log(subnetRanges[subnetNumber].toCidrString());
+
+    return subnetRanges[subnetNumber].toCidrString();
+  });
+}
