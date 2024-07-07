@@ -1,6 +1,8 @@
 import * as aws from "@pulumi/aws";
 import * as random from "@pulumi/random";
 import * as pulumi from "@pulumi/pulumi";
+import * as awsx from "@pulumi/awsx";
+import path from "path";
 
 const randomId = new random.RandomInteger("randomIdForImageRepo", {
   min: 1000,
@@ -19,3 +21,16 @@ export const blenderFarmImageRepo = new aws.ecr.Repository(
     name: nameOfImageRepo,
   },
 );
+
+const blenderRendererDir = path.resolve(
+  process.cwd(),
+  "..",
+  "blender-renderer",
+);
+
+export const blenderRendererImage = new awsx.ecr.Image("blenderFarmRenderer", {
+  repositoryUrl: blenderFarmImageRepo.repositoryUrl,
+  context: blenderRendererDir,
+  imageTag: "latest",
+  platform: "linux/amd64",
+});
