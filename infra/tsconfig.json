@@ -2,7 +2,7 @@
   "compilerOptions": {
     "strict": true,
     "outDir": "bin",
-    "target": "es2020",
+    "target": "es2021",
     "module": "commonjs",
     "moduleResolution": "node",
     "sourceMap": true,
@@ -13,5 +13,7 @@
     "forceConsistentCasingInFileNames": true,
     "esModuleInterop": true
   },
-  "files": ["index.ts"]
+  "files": [
+    "index.ts"
+  ]
 }

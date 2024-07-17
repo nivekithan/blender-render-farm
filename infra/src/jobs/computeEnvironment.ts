@@ -3,7 +3,7 @@ import * as pulumi from "@pulumi/pulumi";
 import * as ipNum from "ip-num";
 
 const vpc = new aws.ec2.Vpc("BlenderFarmVpc", {
-  cidrBlock: "10.2.0.0/16",
+  cidrBlock: "10.3.0.0/16",
   enableDnsHostnames: true,
   assignGeneratedIpv6CidrBlock: true,
   enableDnsSupport: true,
@@ -15,10 +15,10 @@ const ipv6Subnet = new aws.ec2.Subnet("BlenderFarmSubnetIpv6", {
   assignIpv6AddressOnCreation: true,
   enableDns64: true,
   vpcId: vpc.id,
-  mapPublicIpOnLaunch: true,
+  // mapPublicIpOnLaunch: true,
 
-  ipv6CidrBlock: getIpv6SubnetRange(vpcIpv6CidrBlock, BigInt(64), 12),
-  cidrBlock: "10.2.0.0/24",
+  ipv6CidrBlock: getIpv6SubnetRange(vpcIpv6CidrBlock, BigInt(64), 10),
+  cidrBlock: "10.3.0.0/16",
 });
 
 const igw = new aws.ec2.InternetGateway("internet-gateway", {
@@ -54,6 +54,7 @@ const securityGroup = new aws.ec2.SecurityGroup(
     vpcId: vpc.id,
     egress: [
       { protocol: "-1", fromPort: 0, toPort: 0, cidrBlocks: ["0.0.0.0/0"] },
+      { protocol: "-1", fromPort: 0, toPort: 0, ipv6CidrBlocks: ["::/0"] },
     ],
   },
 );
@@ -118,15 +119,17 @@ function getIpv6SubnetRange(
     );
 
     if (ipv6Range.getPrefix().value !== BigInt(56)) {
-      throw new Error("The provided CIDR block is a /56 range.");
+      throw new Error("The provided CIDR block must be a /56 range.");
     }
 
     const subnetRanges = ipv6Range.splitInto(
       new ipNum.IPv6Prefix(subnetIPv6Prefix),
     );
 
-    console.log(subnetRanges[subnetNumber].toCidrString());
+    const cidrBlock = subnetRanges[subnetNumber].toCidrString();
 
-    return subnetRanges[subnetNumber].toCidrString();
+    const properCidrBlock = cidrBlock.replace(":0:0:0:0", "::");
+
+    return properCidrBlock;
   });
 }
