@@ -58,7 +58,7 @@ async function initateAwsBatch(record: S3EventRecord) {
     );
 
     allPromises.push(
-      batchClient.send(command).then(() => {
+      batchClient.send(command).then((res) => {
         console.log(
           `Submitted AWS Batch job to render ${i} frames of ${bucketName}/${objectKey}`,
         );

@@ -74,6 +74,7 @@ export const blenderRendererJobDefinition = new aws.batch.JobDefinition(
       fargatePlatformConfiguration: {
         platformVersion: "LATEST",
       },
+
       runtimePlatform: {
         cpuArchitecture: "X86_64",
         operatingSystemFamily: "LINUX",
@@ -87,11 +88,11 @@ export const blenderRendererJobDefinition = new aws.batch.JobDefinition(
       resourceRequirements: [
         {
           type: "VCPU",
-          value: "8.0",
+          value: "4.0",
         },
         {
           type: "MEMORY",
-          value: "32768",
+          value: "4096",
         },
       ],
     }),
