@@ -92,7 +92,7 @@ export const blenderRendererJobDefinition = new aws.batch.JobDefinition(
         },
         {
           type: "MEMORY",
-          value: "4096",
+          value: "8192",
         },
       ],
     }),

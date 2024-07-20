@@ -41,32 +41,19 @@ async function initateAwsBatch(record: S3EventRecord) {
 
   const batchClient = new BatchClient();
 
-  const allPromises = [];
+  const batchCommand = new SubmitJobCommand({
+    jobName: `blender_farm_${crypto.randomUUID().slice(0, 5)}`,
+    jobQueue: env.JOB_QUEUE_ARN,
+    jobDefinition: env.JOB_DEFINITION_ARN,
+    containerOverrides: {
+      command: ["-blend", objectKey, "-bucket", bucketName],
+    },
+    arrayProperties: {
+      size: frame,
+    },
+  });
 
-  for (let i = 1; i <= frame; i++) {
-    const command = new SubmitJobCommand({
-      jobName: `blender_farm_${crypto.randomUUID().slice(0, 5)}_${i}`,
-      jobQueue: env.JOB_QUEUE_ARN,
-      jobDefinition: env.JOB_DEFINITION_ARN,
-      containerOverrides: {
-        command: ["-blend", objectKey, "-frame", `${i}`, "-bucket", bucketName],
-      },
-    });
-
-    console.log(
-      `Initiating AWS Batch job to render ${i} frames of ${bucketName}/${objectKey}`,
-    );
-
-    allPromises.push(
-      batchClient.send(command).then((res) => {
-        console.log(
-          `Submitted AWS Batch job to render ${i} frames of ${bucketName}/${objectKey}`,
-        );
-      }),
-    );
-  }
-
-  await Promise.all(allPromises);
+  await batchClient.send(batchCommand);
 
   console.log("Finished initiating AWS Batch jobs");
 }
