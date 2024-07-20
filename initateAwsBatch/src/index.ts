@@ -1,6 +1,6 @@
 import { Handler, S3Event, S3EventRecord } from "aws-lambda";
 import { S3Client, GetObjectTaggingCommand } from "@aws-sdk/client-s3";
-import { z } from "zod";
+import { object, z } from "zod";
 import { BatchClient, SubmitJobCommand } from "@aws-sdk/client-batch";
 
 const env = z
@@ -8,6 +8,7 @@ const env = z
     BUCKET_NAME: z.string(),
     JOB_DEFINITION_ARN: z.string(),
     JOB_QUEUE_ARN: z.string(),
+    ZIP_JOB_DEFINITION_ARN: z.string(),
   })
   .parse(process.env);
 
@@ -53,7 +54,21 @@ async function initateAwsBatch(record: S3EventRecord) {
     },
   });
 
-  await batchClient.send(batchCommand);
+  const res = await batchClient.send(batchCommand);
+
+  const jobId = res.jobId;
+
+  const zipBatchCommand = new SubmitJobCommand({
+    jobName: `zip_${crypto.randomUUID().slice(0, 5)}`,
+    jobQueue: env.JOB_QUEUE_ARN,
+    jobDefinition: env.ZIP_JOB_DEFINITION_ARN,
+    containerOverrides: {
+      command: ["-bucket", bucketName, "-folder", `${objectKey}/`],
+    },
+    dependsOn: [{ jobId: jobId }],
+  });
+
+  await batchClient.send(zipBatchCommand);
 
   console.log("Finished initiating AWS Batch jobs");
 }

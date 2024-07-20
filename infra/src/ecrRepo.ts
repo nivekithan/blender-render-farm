@@ -33,4 +33,15 @@ export const blenderRendererImage = new awsx.ecr.Image("blenderFarmRenderer", {
   context: blenderRendererDir,
   imageTag: "latest",
   platform: "linux/amd64",
+  imageName: "blender-renderer",
+});
+
+const zipFramesDir = path.resolve(process.cwd(), "..", "zip-frames");
+
+export const zipFramesImage = new awsx.ecr.Image("zipFrames", {
+  repositoryUrl: blenderFarmImageRepo.repositoryUrl,
+  context: zipFramesDir,
+  imageTag: "latest",
+  platform: "linux/amd64",
+  imageName: "zip-frames",
 });

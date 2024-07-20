@@ -2,8 +2,9 @@ import * as aws from "@pulumi/aws";
 import * as pulumi from "@pulumi/pulumi";
 import path from "path";
 import { blenderFarmBucket } from "./blenderFarmStorage";
-import { blenderRendererJobDefinition } from "./jobs/jobDefination";
+import { blenderRendererJobDefinition } from "./jobs/blenderRenderjobDefination";
 import { blenderFramJobQueue } from "./jobs/queue";
+import { zipJobDefinition } from "./jobs/zipjobDefination";
 
 const assumeRole = aws.iam.getPolicyDocument({
   statements: [
@@ -87,6 +88,7 @@ export const initateAwsBatchLambda = new aws.lambda.Function(
         BUCKET_NAME: blenderFarmBucket.id,
         JOB_DEFINITION_ARN: blenderRendererJobDefinition.arn,
         JOB_QUEUE_ARN: blenderFramJobQueue.arn,
+        ZIP_JOB_DEFINITION_ARN: zipJobDefinition.arn,
       },
     },
   },
