@@ -13,7 +13,7 @@ type Flag struct {
 	bucketName    string
 }
 
-func NewFlagFromCmdLine() Flag {
+func NewFlag() Flag {
 	blendFileKey := flag.String("blend", "", "Path to the blend file to render")
 	bucketName := flag.String("bucket", "", "Bucket to store rendered files in")
 

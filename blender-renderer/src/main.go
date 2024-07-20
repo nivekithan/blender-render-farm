@@ -12,7 +12,7 @@ import (
 
 func main() {
 
-	flags := NewFlagFromCmdLine()
+	flags := NewFlag()
 
 	awsConfig := iaws.LoadAwsConfig()
 	s3Client := iaws.NewS3Client(awsConfig, flags.bucketName)
